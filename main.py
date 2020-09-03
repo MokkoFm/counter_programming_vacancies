@@ -2,24 +2,32 @@ import requests
 
 
 def get_vacancies(language):
-    url = "https://api.hh.ru/vacancies"
-    headers = {"User-Agent": "curl"}
-    payload = {
-        "text": "Программист {}".format(language),
-        "area": "1",
-        "search_period": "30",
-    }
-    response = requests.get(url, headers=headers, params=payload)
-    response.raise_for_status()
+    page = 0
+    pages = 50
+    all_vacancies = []
+    while page < pages:
+        url = "https://api.hh.ru/vacancies"
+        headers = {"User-Agent": "curl"}
+        payload = {
+            "text": "Программист {}".format(language),
+            "area": "1",
+            "search_period": "30",
+            "page": page
+        }
+        response = requests.get(url, headers=headers, params=payload)
+        response.raise_for_status()
 
-    vacancies_amount = response.json()["found"]
-    vacancies = response.json()["items"]
+        vacancies_amount = response.json()["found"]
+        vacancies = response.json()["items"]
+        all_vacancies.append(vacancies)
 
-    filename = "hh-{}.json".format(language)
+        page += 1
+
+    #filename = "hh-{}.json".format(language)
     #with open(filename, "wb") as file:
     #    file.write(response.content)
 
-    return vacancies_amount, vacancies
+    return vacancies_amount, all_vacancies, pages
 
 
 def predict_rub_salary(vacancies):
@@ -41,6 +49,7 @@ def predict_rub_salary(vacancies):
     sum = 0
     for salary_item in salaries:
         sum += salary_item
+
     average_salary = int(sum / len(salaries))
     return average_salary, salaries
 
@@ -51,18 +60,29 @@ def main():
 
     vacancies_amounts = []
     for language in languages:
-        vacancies_amount, vacancies = get_vacancies(language)
-        vacancies_amounts.append(vacancies_amount)
-        average_salary, salaries = predict_rub_salary(vacancies)
-        new_dict = {
+        vacancies_amount, all_vacancies, pages = get_vacancies(language)
+
+        vacancies_processed = 0
+        average_salary_counter = 0
+        for vacancy in all_vacancies:
+            vacancies_amounts.append(vacancies_amount)
+            try:
+                average_salary, salaries = predict_rub_salary(vacancy)
+            except ZeroDivisionError:
+                continue
+            vacancies_processed += len(salaries)
+            average_salary_counter += average_salary
+        
+        average_salary_from_all_pages = int(average_salary_counter / pages)
+        vacancies_amount_and_salaries = {
             "vacancies_found": vacancies_amount,
-            "average_salary": average_salary,
-            "vacancies_processed": len(salaries),
+            "average_salary": average_salary_from_all_pages,
+            "vacancies_processed": vacancies_processed,
         }
-        language_data = {
-            language: new_dict,
+        about_language = {
+            language: vacancies_amount_and_salaries,
         }
-        print(language_data)
+        print(about_language)
 
 
 if __name__==__name__:

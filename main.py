@@ -1,9 +1,33 @@
 import requests
+import os
+from dotenv import load_dotenv
+
+
+def get_sj_vacancies():
+    url = "https://api.superjob.ru/2.0/vacancies/"
+    secret_key = os.getenv("SECRET_KEY")
+    headers = {
+        "X-Api-App-Id": secret_key
+    }
+    payload = {
+        "town": "4",
+        "keyword": "Программист",
+        "catalogues": "Разработка, программирование"
+    }
+    response = requests.get(url, headers=headers, params=payload)
+    response.raise_for_status()
+    filename = "sj.json"
+    vacancies = response.json()["objects"]
+    for vacancy in vacancies:
+        print(vacancy["profession"] + ", " + vacancy["town"]["title"])
+
+    with open(filename, "wb") as file:
+        file.write(response.content)
 
 
 def get_vacancies(language):
     page = 0
-    pages = 50
+    pages = 1
     all_vacancies = []
     while page < pages:
         url = "https://api.hh.ru/vacancies"
@@ -23,9 +47,9 @@ def get_vacancies(language):
 
         page += 1
 
-    #filename = "hh-{}.json".format(language)
-    #with open(filename, "wb") as file:
-    #    file.write(response.content)
+    filename = "hh-{}.json".format(language)
+    with open(filename, "wb") as file:
+        file.write(response.content)
 
     return vacancies_amount, all_vacancies, pages
 
@@ -55,6 +79,8 @@ def predict_rub_salary(vacancies):
 
 
 def main():
+    load_dotenv()
+    get_sj_vacancies()
     languages = ['python', 'javascript', 'java', 'ruby', 'php',
                  'c++', 'go', 'c', 'scala', 'swift']
 

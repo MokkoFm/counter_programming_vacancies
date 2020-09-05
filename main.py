@@ -6,7 +6,7 @@ from terminaltables import AsciiTable
 
 def get_sj_vacancies(language):
     sj_page = 1
-    sj_pages = 2
+    sj_pages = 10
     sj_vacancies_from_all_pages = []
     while sj_page < sj_pages:
         url = "https://api.superjob.ru/2.0/vacancies/"
@@ -26,10 +26,6 @@ def get_sj_vacancies(language):
         sj_vacancies = response.json()["objects"]
         sj_vacancies_from_all_pages.append(sj_vacancies)
 
-        #filename = "sj-{}.json".format(language)
-        #with open(filename, "wb") as file:
-        #    file.write(response.content)
-
         sj_page += 1
 
     return sj_vacancies_amount, sj_vacancies_from_all_pages, sj_pages
@@ -37,7 +33,7 @@ def get_sj_vacancies(language):
 
 def get_hh_vacancies(language):
     page = 0
-    pages = 1
+    pages = 40
     vacancies_from_all_pages = []
     while page < pages:
         url = "https://api.hh.ru/vacancies"
@@ -54,10 +50,6 @@ def get_hh_vacancies(language):
         vacancies_amount = response.json()["found"]
         vacancies = response.json()["items"]
         vacancies_from_all_pages.append(vacancies)
-    
-        #filename = "hh-{}.json".format(language)
-        #with open(filename, "wb") as file:
-        #    file.write(response.content)
 
         page += 1
 
@@ -67,13 +59,14 @@ def get_hh_vacancies(language):
 def predict_rub_salary_for_SuperJob(vacancies):
     sj_salaries = []
     for vacancy in vacancies:
-        if vacancy["payment_from"] == 0:
+        if vacancy["payment_from"] == 0.0 and vacancy["payment_to"] != 0.0:
             sj_salaries.append(vacancy["payment_to"] * 0.8)
-        elif vacancy["payment_to"] == 0:
+        elif vacancy["payment_to"] == 0.0 and vacancy["payment_from"] != 0.0:
             sj_salaries.append(vacancy["payment_from"] * 1.2)
         elif vacancy["payment_from"] and vacancy["payment_to"]:
-            sj_salaries.append((vacancy["payment_from"] + vacancy["payment_to"]) / 2)
-        elif not vacancy["payment_from"] and not vacancy["payment_to"]:
+            sj_salaries.append(
+                (vacancy["payment_from"] + vacancy["payment_to"]) / 2)
+        elif vacancy["payment_from"] == 0.0 and vacancy["payment_to"] == 0.0:
             continue
 
     sum = 0
@@ -111,10 +104,13 @@ def predict_rub_salary_for_HeadHunter(vacancies):
 def make_table_for_SJ_vacancies(languages, sj_data):
     title = "SuperJob"
     TABLE_DATA = []
-    TABLE_DATA.append(['Language', 'Vacancies found', 'Average salary', 'Vacancies processed'])
+    TABLE_DATA.append(['Language', 'Vacancies found',
+                       'Average salary', 'Vacancies processed'])
     for language in languages:
-        TABLE_DATA.append([language, sj_data[language]["sj_vacancies_found"], sj_data[language]["sj_average_salary"], sj_data[language]["sj_vacancies_processed"]])
-
+        TABLE_DATA.append(
+            [language, sj_data[language]["sj_vacancies_found"],
+             sj_data[language]["sj_average_salary"],
+             sj_data[language]["sj_vacancies_processed"]])
 
     table_instance = AsciiTable(TABLE_DATA, title)
     table_instance.justify_columns[3] = 'right'
@@ -122,60 +118,96 @@ def make_table_for_SJ_vacancies(languages, sj_data):
     print()
 
 
-def main():
-    load_dotenv()    
-    languages = ['python', 'javascript', 'java', 'ruby', 'php',
-                 'c++', 'go', 'c', 'scala', 'swift']
-
-    #sj_vacancies_amounts = []
-    sj_data = {}
+def make_table_for_HH_vacancies(languages, hh_data):
+    title = "HeadHunter"
+    TABLE_DATA = []
+    TABLE_DATA.append(['Language', 'Vacancies found',
+                       'Average salary', 'Vacancies processed'])
     for language in languages:
-        sj_vacancies_amount, sj_vacancies_from_all_pages, sj_pages = get_sj_vacancies(language)
+        TABLE_DATA.append([language, hh_data[language]["hh_vacancies_found"],
+                           hh_data[language]["hh_average_salary"],
+                           hh_data[language]["hh_vacancies_processed"]])
+
+    table_instance = AsciiTable(TABLE_DATA, title)
+    table_instance.justify_columns[3] = 'right'
+    print(table_instance.table)
+    print()
+
+
+def get_sj_dict(languages):
+    sj_data = {}
+
+    for language in languages:
+        try:
+            sj_vacancies_amount, sj_vacancies_from_all_pages, sj_pages = get_sj_vacancies(
+                language)
+        except requests.exceptions.HTTPError:
+            print('Warning! Error in request for SuperJob.ru!')
         sj_vacancies_processed = 0
         sj_average_salary_counter = 0
         for sj_vacancies_from_one_page in sj_vacancies_from_all_pages:
-            #sj_vacancies_amounts.append(sj_vacancies_amount)
             try:
-                sj_average_salary, sj_salaries = predict_rub_salary_for_SuperJob(sj_vacancies_from_one_page)
+                sj_average_salary, sj_salaries = predict_rub_salary_for_SuperJob(
+                    sj_vacancies_from_one_page)
             except ZeroDivisionError:
                 continue
             sj_vacancies_processed += len(sj_salaries)
             sj_average_salary_counter += sj_average_salary
 
-        sj_average_salary_from_all_pages = int(sj_average_salary_counter / sj_pages)
+        sj_average_salary_from_all_pages = int(
+            sj_average_salary_counter / sj_pages)
         sj_vacancies_amount_and_salaries = {
             "sj_vacancies_found": sj_vacancies_amount,
             "sj_average_salary": sj_average_salary_from_all_pages,
             "sj_vacancies_processed": sj_vacancies_processed,
         }
         sj_data[language] = sj_vacancies_amount_and_salaries
-        #print(sj_about_language)
+
+    return sj_data
 
 
-        vacancies_amount, vacancies_from_all_pages, pages = get_hh_vacancies(language)
+def get_hh_dict(languages):
+    hh_data = {}
+
+    for language in languages:
+        try:
+            vacancies_amount, vacancies_from_all_pages, pages = get_hh_vacancies(
+                language)
+        except requests.exceptions.HTTPError:
+            print('Warning! Error in request for HeadHunter.ru!')
         vacancies_processed = 0
         average_salary_counter = 0
         for vacancies_from_one_page in vacancies_from_all_pages:
             try:
-                average_salary, salaries = predict_rub_salary_for_HeadHunter(vacancies_from_one_page)
+                average_salary, salaries = predict_rub_salary_for_HeadHunter(
+                    vacancies_from_one_page)
             except ZeroDivisionError:
                 continue
             vacancies_processed += len(salaries)
             average_salary_counter += average_salary
-        
+
         average_salary_from_all_pages = int(average_salary_counter / pages)
         hh_vacancies_amount_and_salaries = {
             "hh_vacancies_found": vacancies_amount,
             "hh_average_salary": average_salary_from_all_pages,
             "hh_vacancies_processed": vacancies_processed,
         }
-        hh_about_language = {
-            language: hh_vacancies_amount_and_salaries,
-        }
-        #print(hh_about_language)
-    for language in languages:
-        make_table_for_SJ_vacancies(languages, sj_data)
+
+        hh_data[language] = hh_vacancies_amount_and_salaries
+
+    return hh_data
 
 
-if __name__==__name__:
+def main():
+    load_dotenv()
+    languages = ['python', 'javascript', 'java', 'ruby', 'php',
+                 'c++', 'go', 'c', 'scala', 'swift']
+
+    sj_data = get_sj_dict(languages)
+    hh_data = get_hh_dict(languages)
+    make_table_for_SJ_vacancies(languages, sj_data)
+    make_table_for_HH_vacancies(languages, hh_data)
+
+
+if __name__ == __name__:
     main()

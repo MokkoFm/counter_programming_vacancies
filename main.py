@@ -1,11 +1,12 @@
 import requests
 import os
 from dotenv import load_dotenv
+from terminaltables import AsciiTable
 
 
 def get_sj_vacancies(language):
     sj_page = 1
-    sj_pages = 3
+    sj_pages = 2
     sj_vacancies_from_all_pages = []
     while sj_page < sj_pages:
         url = "https://api.superjob.ru/2.0/vacancies/"
@@ -36,7 +37,7 @@ def get_sj_vacancies(language):
 
 def get_hh_vacancies(language):
     page = 0
-    pages = 2
+    pages = 1
     vacancies_from_all_pages = []
     while page < pages:
         url = "https://api.hh.ru/vacancies"
@@ -107,12 +108,27 @@ def predict_rub_salary_for_HeadHunter(vacancies):
     return average_salary, salaries
 
 
+def make_table_for_SJ_vacancies(languages, sj_data):
+    title = "SuperJob"
+    TABLE_DATA = []
+    TABLE_DATA.append(['Language', 'Vacancies found', 'Average salary', 'Vacancies processed'])
+    for language in languages:
+        TABLE_DATA.append([language, sj_data[language]["sj_vacancies_found"], sj_data[language]["sj_average_salary"], sj_data[language]["sj_vacancies_processed"]])
+
+
+    table_instance = AsciiTable(TABLE_DATA, title)
+    table_instance.justify_columns[3] = 'right'
+    print(table_instance.table)
+    print()
+
+
 def main():
     load_dotenv()    
     languages = ['python', 'javascript', 'java', 'ruby', 'php',
                  'c++', 'go', 'c', 'scala', 'swift']
 
     #sj_vacancies_amounts = []
+    sj_data = {}
     for language in languages:
         sj_vacancies_amount, sj_vacancies_from_all_pages, sj_pages = get_sj_vacancies(language)
         sj_vacancies_processed = 0
@@ -132,8 +148,8 @@ def main():
             "sj_average_salary": sj_average_salary_from_all_pages,
             "sj_vacancies_processed": sj_vacancies_processed,
         }
-        sj_about_language = {language: sj_vacancies_amount_and_salaries}
-        print(sj_about_language)
+        sj_data[language] = sj_vacancies_amount_and_salaries
+        #print(sj_about_language)
 
 
         vacancies_amount, vacancies_from_all_pages, pages = get_hh_vacancies(language)
@@ -156,7 +172,9 @@ def main():
         hh_about_language = {
             language: hh_vacancies_amount_and_salaries,
         }
-        print(hh_about_language)
+        #print(hh_about_language)
+    for language in languages:
+        make_table_for_SJ_vacancies(languages, sj_data)
 
 
 if __name__==__name__:

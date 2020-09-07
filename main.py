@@ -22,8 +22,9 @@ def get_sj_vacancies(secret_key, language):
         }
         response = requests.get(url, headers=headers, params=payload)
         response.raise_for_status()
-        vacancies_amount = response.json()["total"]
-        vacancies = response.json()["objects"]
+        vacancies_json = response.json()
+        vacancies_amount = vacancies_json["total"]
+        vacancies = vacancies_json["objects"]
         vacancies_from_all_pages.append(vacancies)
 
         page += 1
@@ -46,9 +47,9 @@ def get_hh_vacancies(language):
         }
         response = requests.get(url, headers=headers, params=payload)
         response.raise_for_status()
-
-        vacancies_amount = response.json()["found"]
-        vacancies = response.json()["items"]
+        vacancies_json = response.json()
+        vacancies_amount = vacancies_json["found"]
+        vacancies = vacancies_json["items"]
         vacancies_from_all_pages.append(vacancies)
 
         page += 1

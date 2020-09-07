@@ -7,7 +7,7 @@ import logging
 
 def get_sj_vacancies(secret_key, language):
     page = 1
-    pages = 10
+    pages = 2
     vacancies_from_all_pages = []
     while page < pages:
         url = "https://api.superjob.ru/2.0/vacancies/"
@@ -33,7 +33,7 @@ def get_sj_vacancies(secret_key, language):
 
 def get_hh_vacancies(language):
     page = 0
-    pages = 40
+    pages = 1
     vacancies_from_all_pages = []
     while page < pages:
         url = "https://api.hh.ru/vacancies"
@@ -69,11 +69,7 @@ def predict_rub_salary_for_SuperJob(vacancies):
         elif vacancy["payment_from"] == 0.0 and vacancy["payment_to"] == 0.0:
             continue
 
-    sum = 0
-    for salary_item in salaries:
-        sum += salary_item
-
-    average_salary = int(sum / len(salaries))
+    average_salary = int(sum(salaries) / len(salaries))
     return average_salary, salaries
 
 
@@ -93,11 +89,7 @@ def predict_rub_salary_for_HeadHunter(vacancies):
             elif salary['from'] and salary['to']:
                 salaries.append((salary['from'] + salary['to']) / 2)
 
-    sum = 0
-    for salary_item in salaries:
-        sum += salary_item
-
-    average_salary = int(sum / len(salaries))
+    average_salary = int(sum(salaries) / len(salaries))
     return average_salary, salaries
 
 

@@ -10,11 +10,15 @@ You can get a data from HeadHunter without token.
 
 After cloning the repository create a `.env` file in the project's folder and put the token to it:
 
-```SECRET_KEY=your_token```
+```
+SECRET_KEY=your_token
+```
 
 Python3 should be already installed. Then use pip to install dependencies:
 
-```pip install -r requirements.txt```
+```
+pip install -r requirements.txt
+```
 
 Then run in the project's folder: 
 ```

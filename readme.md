@@ -16,7 +16,12 @@ Python3 should be already installed. Then use pip to install dependencies:
 
 ```pip install -r requirements.txt```
 
-Then run `python main.py` in the project's folder. You'll see the results in the console as tables.
+Then run in the project's folder: 
+```
+python main.py
+``` 
+
+You'll see the results in the console as tables.
 
 ### Project Goals
 

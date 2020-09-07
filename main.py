@@ -100,7 +100,7 @@ def predict_rub_salary_for_HeadHunter(vacancies):
     return average_salary, salaries
 
 
-def make_table_for_SJ_vacancies(languages, superjob_summary):
+def print_table_for_SJ_vacancies(languages, superjob_summary):
     title = "SuperJob"
     table_data = []
     table_data.append(['Language', 'Vacancies found',
@@ -117,7 +117,7 @@ def make_table_for_SJ_vacancies(languages, superjob_summary):
     print()
 
 
-def make_table_for_HH_vacancies(languages, headhunter_summary):
+def print_table_for_HH_vacancies(languages, headhunter_summary):
     title = "HeadHunter"
     table_data = []
     table_data.append(['Language', 'Vacancies found',
@@ -133,7 +133,7 @@ def make_table_for_HH_vacancies(languages, headhunter_summary):
     print()
 
 
-def get_sj_dict(secret_key, languages):
+def get_sj_summary(secret_key, languages):
     superjob_summary = {}
 
     for language in languages:
@@ -165,7 +165,7 @@ def get_sj_dict(secret_key, languages):
     return superjob_summary
 
 
-def get_hh_dict(languages):
+def get_hh_summary(languages):
     headhunter_summary = {}
 
     for language in languages:
@@ -203,10 +203,10 @@ def main():
     languages = ['python', 'javascript', 'java', 'ruby', 'php',
                  'c++', 'go', 'c', 'scala', 'swift']
 
-    superjob_summary = get_sj_dict(secret_key, languages)
-    headhunter_summary = get_hh_dict(languages)
-    make_table_for_SJ_vacancies(languages, superjob_summary)
-    make_table_for_HH_vacancies(languages, headhunter_summary)
+    superjob_summary = get_sj_summary(secret_key, languages)
+    headhunter_summary = get_hh_summary(languages)
+    print_table_for_SJ_vacancies(languages, superjob_summary)
+    print_table_for_HH_vacancies(languages, headhunter_summary)
 
 
 if __name__ == __name__:

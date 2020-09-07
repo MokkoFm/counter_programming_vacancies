@@ -2,6 +2,7 @@ import requests
 import os
 from dotenv import load_dotenv
 from terminaltables import AsciiTable
+import logging
 
 
 def get_sj_vacancies(secret_key, language):
@@ -141,7 +142,8 @@ def get_sj_summary(secret_key, languages):
             vacancies_amount, vacancies_from_all_pages, pages = get_sj_vacancies(
                 secret_key, language)
         except requests.exceptions.HTTPError:
-            print('Warning! Error in request for SuperJob.ru!')
+            logging.error('Error in request for SuperJob.ru!')
+            continue
         vacancies_processed = 0
         average_salary_counter = 0
         for vacancies_from_one_page in vacancies_from_all_pages:
@@ -173,7 +175,8 @@ def get_hh_summary(languages):
             vacancies_amount, vacancies_from_all_pages, pages = get_hh_vacancies(
                 language)
         except requests.exceptions.HTTPError:
-            print('Warning! Error in request for HeadHunter.ru!')
+            logging.error('Error in request for HeadHunter.ru!')
+            continue
         vacancies_processed = 0
         average_salary_counter = 0
         for vacancies_from_one_page in vacancies_from_all_pages:

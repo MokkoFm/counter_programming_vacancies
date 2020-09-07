@@ -94,37 +94,42 @@ def predict_rub_salary_for_HeadHunter(vacancies):
     return average_salary, salaries
 
 
-def print_table_for_SJ_vacancies(languages, superjob_summary):
-    title = "SuperJob"
+def make_table_with_titles():
     table_data = []
     table_data.append(['Language', 'Vacancies found',
                        'Average salary', 'Vacancies processed'])
+    return table_data
+
+
+def print_table(table_data, title):
+    table_instance = AsciiTable(table_data, title)
+    table_instance.justify_columns[3] = 'right'
+    print(table_instance.table)
+    print()
+
+
+def print_table_for_SJ_vacancies(languages, superjob_summary):
+    title = "SuperJob"
+    table_data = make_table_with_titles()
     for language in languages:
         table_data.append(
             [language, superjob_summary[language]["sj_vacancies_found"],
              superjob_summary[language]["sj_average_salary"],
              superjob_summary[language]["sj_vacancies_processed"]])
 
-    table_instance = AsciiTable(table_data, title)
-    table_instance.justify_columns[3] = 'right'
-    print(table_instance.table)
-    print()
+    print_table(table_data, title)
 
 
 def print_table_for_HH_vacancies(languages, headhunter_summary):
     title = "HeadHunter"
-    table_data = []
-    table_data.append(['Language', 'Vacancies found',
-                       'Average salary', 'Vacancies processed'])
+    table_data = make_table_with_titles()
     for language in languages:
-        table_data.append([language, headhunter_summary[language]["hh_vacancies_found"],
-                           headhunter_summary[language]["hh_average_salary"],
-                           headhunter_summary[language]["hh_vacancies_processed"]])
+        table_data.append(
+            [language, headhunter_summary[language]["hh_vacancies_found"],
+             headhunter_summary[language]["hh_average_salary"],
+             headhunter_summary[language]["hh_vacancies_processed"]])
 
-    table_instance = AsciiTable(table_data, title)
-    table_instance.justify_columns[3] = 'right'
-    print(table_instance.table)
-    print()
+    print_table(table_data, title)
 
 
 def get_sj_summary(secret_key, languages):

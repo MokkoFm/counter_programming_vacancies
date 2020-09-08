@@ -57,18 +57,25 @@ def get_hh_vacancies(language):
     return vacancies_amount, vacancies_from_all_pages, pages
 
 
+def predict_salary(salaries, salary_from, salary_to):
+    if salary_from is None or salary_from == 0.0:
+        salaries.append(salary_to * 0.8)
+    elif salary_to == 0.0 or salary_to is None:
+        salaries.append(salary_from * 1.2)
+    elif salary_from and salary_to:
+        salaries.append((salary_from + salary_to) / 2)
+
+
 def predict_rub_salary_for_SuperJob(vacancies):
     salaries = []
     for vacancy in vacancies:
-        if vacancy["payment_from"] == 0.0 and vacancy["payment_to"] != 0.0:
-            salaries.append(vacancy["payment_to"] * 0.8)
-        elif vacancy["payment_to"] == 0.0 and vacancy["payment_from"] != 0.0:
-            salaries.append(vacancy["payment_from"] * 1.2)
-        elif vacancy["payment_from"] and vacancy["payment_to"]:
-            salaries.append(
-                (vacancy["payment_from"] + vacancy["payment_to"]) / 2)
-        elif vacancy["payment_from"] == 0.0 and vacancy["payment_to"] == 0.0:
+        salary_from = vacancy["payment_from"]
+        salary_to = vacancy["payment_to"]
+
+        if salary_from == 0.0 and salary_to == 0.0:
             continue
+        else:
+            predict_salary(salaries, salary_from, salary_to)
 
     average_salary = int(sum(salaries) / len(salaries))
     return average_salary, salaries
@@ -83,12 +90,9 @@ def predict_rub_salary_for_HeadHunter(vacancies):
             continue
 
         if salary['currency'] == 'RUR':
-            if salary['from'] is None:
-                salaries.append(salary['to'] * 0.8)
-            elif salary['to'] is None:
-                salaries.append(salary['from'] * 1.2)
-            elif salary['from'] and salary['to']:
-                salaries.append((salary['from'] + salary['to']) / 2)
+            salary_from = salary['from']
+            salary_to = salary['to']
+            predict_salary(salaries, salary_from, salary_to)
 
     average_salary = int(sum(salaries) / len(salaries))
     return average_salary, salaries

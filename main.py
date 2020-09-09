@@ -22,10 +22,10 @@ def get_sj_vacancies(secret_key, language):
         }
         response = requests.get(url, headers=headers, params=payload)
         response.raise_for_status()
-        vacancies_json = response.json()
-        vacancies_amount = vacancies_json["total"]
-        vacancies = vacancies_json["objects"]
-        vacancies_from_all_pages.append(vacancies)
+        vacancies = response.json()
+        vacancies_amount = vacancies["total"]
+        vacancies_items = vacancies["objects"]
+        vacancies_from_all_pages.append(vacancies_items)
 
         page += 1
 
@@ -47,10 +47,10 @@ def get_hh_vacancies(language):
         }
         response = requests.get(url, headers=headers, params=payload)
         response.raise_for_status()
-        vacancies_json = response.json()
-        vacancies_amount = vacancies_json["found"]
-        vacancies = vacancies_json["items"]
-        vacancies_from_all_pages.append(vacancies)
+        vacancies = response.json()
+        vacancies_amount = vacancies["found"]
+        vacancies_items = vacancies["items"]
+        vacancies_from_all_pages.append(vacancies_items)
 
         page += 1
 
@@ -98,42 +98,42 @@ def predict_rub_salary_for_HeadHunter(vacancies):
     return average_salary, salaries
 
 
-def make_table_with_titles():
-    table_data = []
-    table_data.append(['Language', 'Vacancies found',
-                       'Average salary', 'Vacancies processed'])
-    return table_data
+def get_titles_for_table():
+    table = []
+    table.append(['Language', 'Vacancies found',
+                  'Average salary', 'Vacancies processed'])
+    return table
 
 
-def print_table(table_data, title):
-    table_instance = AsciiTable(table_data, title)
-    table_instance.justify_columns[3] = 'right'
-    print(table_instance.table)
+def print_table(table, title):
+    table_vacancies = AsciiTable(table, title)
+    table_vacancies.justify_columns[3] = 'right'
+    print(table_vacancies.table)
     print()
 
 
-def print_table_for_SJ_vacancies(languages, superjob_summary):
+def prepare_table_for_SJ_vacancies(languages, superjob_summary):
     title = "SuperJob"
-    table_data = make_table_with_titles()
+    table = get_titles_for_table()
     for language in languages:
-        table_data.append(
+        table.append(
             [language, superjob_summary[language]["sj_vacancies_found"],
              superjob_summary[language]["sj_average_salary"],
              superjob_summary[language]["sj_vacancies_processed"]])
 
-    print_table(table_data, title)
+    print_table(table, title)
 
 
-def print_table_for_HH_vacancies(languages, headhunter_summary):
+def prepare_table_for_HH_vacancies(languages, headhunter_summary):
     title = "HeadHunter"
-    table_data = make_table_with_titles()
+    table = get_titles_for_table()
     for language in languages:
-        table_data.append(
+        table.append(
             [language, headhunter_summary[language]["hh_vacancies_found"],
              headhunter_summary[language]["hh_average_salary"],
              headhunter_summary[language]["hh_vacancies_processed"]])
 
-    print_table(table_data, title)
+    print_table(table, title)
 
 
 def get_sj_summary(secret_key, languages):
@@ -210,8 +210,8 @@ def main():
 
     superjob_summary = get_sj_summary(secret_key, languages)
     headhunter_summary = get_hh_summary(languages)
-    print_table_for_SJ_vacancies(languages, superjob_summary)
-    print_table_for_HH_vacancies(languages, headhunter_summary)
+    prepare_table_for_SJ_vacancies(languages, superjob_summary)
+    prepare_table_for_HH_vacancies(languages, headhunter_summary)
 
 
 if __name__ == __name__:

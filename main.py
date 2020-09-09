@@ -7,7 +7,7 @@ import logging
 
 def get_sj_vacancies(secret_key, language):
     page = 1
-    pages = 2
+    pages = 10
     vacancies_from_all_pages = []
     while page < pages:
         url = "https://api.superjob.ru/2.0/vacancies/"
@@ -34,7 +34,7 @@ def get_sj_vacancies(secret_key, language):
 
 def get_hh_vacancies(language):
     page = 0
-    pages = 1
+    pages = 40
     vacancies_from_all_pages = []
     while page < pages:
         url = "https://api.hh.ru/vacancies"

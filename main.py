@@ -98,13 +98,6 @@ def predict_rub_salary_for_HeadHunter(vacancies):
     return average_salary, salaries
 
 
-def get_titles_for_table():
-    table = []
-    table.append(['Language', 'Vacancies found',
-                  'Average salary', 'Vacancies processed'])
-    return table
-
-
 def print_table(table, title):
     table_vacancies = AsciiTable(table, title)
     table_vacancies.justify_columns[3] = 'right'
@@ -112,26 +105,15 @@ def print_table(table, title):
     print()
 
 
-def prepare_table_for_SJ_vacancies(languages, superjob_summary):
-    title = "SuperJob"
-    table = get_titles_for_table()
+def append_vacancies_data_to_table(summary, languages, title):
+    table = []
+    table.append(['Language', 'Vacancies found',
+                  'Average salary', 'Vacancies processed'])
     for language in languages:
         table.append(
-            [language, superjob_summary[language]["sj_vacancies_found"],
-             superjob_summary[language]["sj_average_salary"],
-             superjob_summary[language]["sj_vacancies_processed"]])
-
-    print_table(table, title)
-
-
-def prepare_table_for_HH_vacancies(languages, headhunter_summary):
-    title = "HeadHunter"
-    table = get_titles_for_table()
-    for language in languages:
-        table.append(
-            [language, headhunter_summary[language]["hh_vacancies_found"],
-             headhunter_summary[language]["hh_average_salary"],
-             headhunter_summary[language]["hh_vacancies_processed"]])
+            [language, summary[language]["vacancies_found"],
+             summary[language]["average_salary"],
+             summary[language]["vacancies_processed"]])
 
     print_table(table, title)
 
@@ -160,9 +142,9 @@ def get_sj_summary(secret_key, languages):
         average_salary_from_all_pages = int(
             average_salary_counter / pages)
         sj_vacancies_amount_and_salaries = {
-            "sj_vacancies_found": vacancies_amount,
-            "sj_average_salary": average_salary_from_all_pages,
-            "sj_vacancies_processed": vacancies_processed,
+            "vacancies_found": vacancies_amount,
+            "average_salary": average_salary_from_all_pages,
+            "vacancies_processed": vacancies_processed,
         }
         superjob_summary[language] = sj_vacancies_amount_and_salaries
 
@@ -192,9 +174,9 @@ def get_hh_summary(languages):
 
         average_salary_from_all_pages = int(average_salary_counter / pages)
         hh_vacancies_amount_and_salaries = {
-            "hh_vacancies_found": vacancies_amount,
-            "hh_average_salary": average_salary_from_all_pages,
-            "hh_vacancies_processed": vacancies_processed,
+            "vacancies_found": vacancies_amount,
+            "average_salary": average_salary_from_all_pages,
+            "vacancies_processed": vacancies_processed,
         }
 
         headhunter_summary[language] = hh_vacancies_amount_and_salaries
@@ -210,8 +192,8 @@ def main():
 
     superjob_summary = get_sj_summary(secret_key, languages)
     headhunter_summary = get_hh_summary(languages)
-    prepare_table_for_SJ_vacancies(languages, superjob_summary)
-    prepare_table_for_HH_vacancies(languages, headhunter_summary)
+    append_vacancies_data_to_table(superjob_summary, languages, "SuperJob")
+    append_vacancies_data_to_table(headhunter_summary, languages, "HeadHunter")
 
 
 if __name__ == __name__:
